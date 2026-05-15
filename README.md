@@ -1,6 +1,6 @@
 # Medblocks - Build Your First Real FHIR App in 15 Days - Submission
 
-# Verada Neurorehab Readiness
+# "Verada Neurorehab Readiness" Application
 
 Verada Neurorehab Readiness is a FHIR-based application for remote neurorehabilitation workflows. It combines home physiological monitoring, rehabilitation planning, synthetic neurorehabilitation datasets, and structured clinical documentation to help clinicians assess daily readiness for therapy, personalize sessions, and write outcomes back into the patient record.
 
