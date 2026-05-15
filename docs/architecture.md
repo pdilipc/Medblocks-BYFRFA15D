@@ -1,15 +1,18 @@
 # Architecture
 
-Verada Neurorehab Readiness is designed as a lightweight workflow application layered on top of a FHIR server. Its purpose is to combine patient context, remote physiological monitoring, rehabilitation planning, and post-session documentation in one clinician-facing workflow.
+## Overview
 
-The architecture is intentionally compact for rapid implementation. It prioritizes clear interoperability and a working end-to-end clinical use case over heavy infrastructure or advanced analytics in the first version. 
+Verada Neurorehab Readiness is designed as a lightweight workflow application layered on top of a FHIR server. Its purpose is to combine patient context, remote physiological monitoring, synthetic neurorehabilitation datasets, rehabilitation planning, and post-session documentation in one clinician-facing workflow.
+
+The architecture is intentionally compact for rapid implementation. It prioritizes clear interoperability and a working end-to-end clinical use case over heavy infrastructure or advanced analytics in the first version.
 
 ## Design Goals
 
-- Keep the workflow clinically meaningful and easy to demonstrate. 
-- Read real FHIR resources from a server and write structured outputs back. 
-- Support home or hybrid neurorehabilitation pathways using physiological observations as pre-session context. 
-- Remain extensible for broader Verada orchestration and intelligence layers in future versions. 
+- Keep the workflow clinically meaningful and easy to demonstrate.
+- Read real FHIR resources from a server and write structured outputs back.
+- Support home or hybrid neurorehabilitation pathways using physiological observations as pre-session context.
+- Use synthetic neurorehabilitation cohorts to simulate realistic specialty workflows without privacy constraints.
+- Remain extensible for broader Verada orchestration and intelligence layers in future versions.
 
 ## High-Level Components
 
@@ -17,38 +20,42 @@ The architecture is intentionally compact for rapid implementation. It prioritiz
 
 The FHIR server acts as the system of record for patient context, device-linked observations, conditions, rehabilitation plans, and session outcomes. It provides the interoperable resource layer that the app reads from and writes to.
 
-### 2. Monitoring and Device Inputs
+### 2. Synthetic Data Generation Layer
 
-Remote monitoring systems contribute physiological data such as heart rate, respiration, sleep-related measures, movement trends, or other relevant pre-session signals. These data are normalized into FHIR-compatible structures, primarily through `Device` and `Observation` resources.
+A custom Synthea Generic Module Framework module is used to generate synthetic stroke and neurorehabilitation-oriented patient pathways. This layer supports baseline impairment scenarios, longitudinal physiological observations, therapy-routing logic, and outcome trajectories relevant to the app workflow.
 
-### 3. Application Layer
+### 3. Monitoring and Device Inputs
 
-The application presents a therapist-facing interface with patient lookup, daily readiness review, session planning, and post-session documentation. It translates FHIR resources into a clear workflow that supports real care delivery decisions. 
+Remote monitoring systems contribute physiological data such as heart rate, respiration, sleep-related measures, movement trends, or other relevant pre-session signals. In the challenge implementation, these may be represented through synthetic resource generation, mock device feeds, or uploaded bundles.
 
-### 4. Documentation and Write-back
+### 4. Application Layer
+
+The application presents a therapist-facing interface with patient lookup, daily readiness review, session planning, therapy routing, and post-session documentation. It translates FHIR resources into a clear workflow that supports real care delivery decisions.
+
+### 5. Documentation and Write-back
 
 After the therapy session, the app records what happened using structured resources such as `Procedure`, `Observation`, `QuestionnaireResponse`, and encounter-linked updates. This creates continuity in the record and supports future longitudinal interpretation.
 
 ## Data Flow
 
 ```text
-Remote Monitoring Source / Rehab Device
+Custom Synthea Neurorehab Module
                 |
                 v
-       FHIR-normalized Device Data
+     Synthetic FHIR Patient Cohort
                 |
                 v
             FHIR Server
                 |
-     ---------------------------
-     |            |            |
-     v            v            v
-  Patient      Conditions    Care Plans
-  Context      + History     + Requests
-     \            |            /
-      \           |           /
-       \          |          /
-        v         v         v
+     -------------------------------
+     |              |              |
+     v              v              v
+  Patient       Conditions      Care Plans
+  Context       + History       + Requests
+     \              |              /
+      \             |             /
+       \            |            /
+        v           v           v
       Verada Neurorehab Readiness
                 |
                 v
@@ -60,16 +67,16 @@ Remote Monitoring Source / Rehab Device
 
 ## Application Boundaries
 
-The first version is purely an attempt to implement a full clinical intelligence engine or a full EPR replacement. Its purpose is to show that physiological context, rehabilitation planning, and structured documentation can be connected in a focused FHIR workflow.
+The first version should not attempt to implement a full clinical intelligence engine or a full EPR replacement. Its purpose is to show that physiological context, rehabilitation planning, synthetic specialty data, and structured documentation can be connected in a focused FHIR workflow.
 
-In a later version, this same architecture could support richer baseline and longitudinal models, multi-device integration, and more sophisticated therapy personalization. 
+In a later version, this same architecture could support richer baseline and longitudinal models, multi-device integration, and more sophisticated therapy personalization.
 
-## Current Frontend Modules
+## Suggested Frontend Modules
 
 - Patient search and selection.
 - Daily readiness dashboard.
-- Session planning and decision capture.
+- Session planning and routing.
 - Post-session documentation.
-- Minimal audit or activity history view.
+- Minimal activity history or recent trend view.
 
-These modules are enough to start with, but can later expand depending on our business needs.
+These modules are enough to support a coherent challenge-ready implementation while leaving space for later growth.
