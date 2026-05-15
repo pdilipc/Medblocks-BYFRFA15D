@@ -200,85 +200,96 @@ A suggested repository structure:
 
 
 
+# Verada Neurorehab Readiness
 
+Verada Neurorehab Readiness is a FHIR-based application for remote neurorehabilitation workflows. It combines home physiological monitoring, rehabilitation planning, and structured clinical documentation to help clinicians assess daily readiness for therapy, personalize sessions, and write outcomes back into the patient record. [web:36][cite:16][cite:17]
 
+This repository is focused on a practical specialty-care workflow rather than a generic patient viewer. The core use case is simple: review recent physiological context before therapy begins, decide whether to proceed or modify the session, and record the outcome in interoperable FHIR format. [cite:23][cite:24][web:1]
 
-# Architecture
+## Features
 
-Verada Neurorehab Readiness is designed as a lightweight workflow application layered on top of a FHIR server. Its purpose is to combine patient context, remote physiological monitoring, rehabilitation planning, and post-session documentation in one clinician-facing workflow. [web:43][cite:17][cite:23]
+- Patient lookup and selection with core demographic and rehabilitation context. [web:30]
+- Daily readiness dashboard using recent physiological observations and supporting clinical context. [cite:23][web:1]
+- Session planning workflow for proceed, modify, or defer decisions. [cite:24]
+- Post-session documentation with structured write-back to a FHIR server. [cite:16][web:1]
+- Compact architecture designed for rapid prototyping and extension into broader neurorehabilitation workflows. [cite:17][cite:18]
 
-The architecture is intentionally compact for rapid implementation. It prioritizes clear interoperability and a working end-to-end clinical use case over heavy infrastructure or advanced analytics in the first version. [web:36][web:40]
+## Use Case
 
-## Design Goals
+A patient receives passive physiological monitoring at home before a scheduled neurorehabilitation session. The clinician reviews recent observations, active conditions, and the rehabilitation plan, decides whether to proceed, modify, or defer therapy, then records what was delivered and how the patient responded. [cite:23][cite:24]
 
-- Keep the workflow clinically meaningful and easy to demonstrate. [web:36]
-- Read real FHIR resources from a server and write structured outputs back. [web:43][web:95]
-- Support home or hybrid neurorehabilitation pathways using physiological observations as pre-session context. [cite:23][cite:24]
-- Remain extensible for broader Verada orchestration and intelligence layers in future versions. [cite:17][cite:18]
+This creates a longitudinal and interoperable record of readiness, intervention, and outcome that can support continuity across providers and care settings. It is especially relevant for stroke and other neurological motor deficit pathways where pre-session physiological context may improve safety and personalization. [cite:18][cite:19][web:1]
 
-## High-Level Components
+## Architecture
 
-### 1. FHIR Server
+The application sits on top of a FHIR server and uses a lightweight workflow layer to present patient context, monitoring data, and rehabilitation planning in one therapist-facing view. After the session, the same app writes structured documentation back into the record. [web:43][cite:17]
 
-The FHIR server acts as the system of record for patient context, device-linked observations, conditions, rehabilitation plans, and session outcomes. It provides the interoperable resource layer that the app reads from and writes to. [web:1][web:43]
+A deeper architecture description is available in [`docs/architecture.md`](docs/architecture.md), and the workflow and resource mappings are described in the docs folder. [web:96][web:99]
 
-### 2. Monitoring and Device Inputs
+## FHIR Resources
 
-Remote monitoring systems contribute physiological data such as heart rate, respiration, sleep-related measures, movement trends, or other relevant pre-session signals. These data are normalized into FHIR-compatible structures, primarily through `Device` and `Observation` resources. [web:1][cite:23]
+This project is centered on a compact set of FHIR resources:
 
-### 3. Application Layer
+- `Patient`
+- `Encounter`
+- `Device`
+- `Observation`
+- `Condition`
+- `CarePlan`
+- `ServiceRequest`
+- `Procedure`
+- `QuestionnaireResponse`
 
-The application presents a therapist-facing interface with patient lookup, daily readiness review, session planning, and post-session documentation. It translates FHIR resources into a clear workflow that supports real care delivery decisions. [cite:24][web:36]
+These resources are used to support patient selection, physiological monitoring review, rehabilitation planning, session documentation, and structured write-back. A more detailed resource breakdown is available in [`docs/fhir-resources.md`](docs/fhir-resources.md). [web:1][web:4][cite:16]
 
-### 4. Documentation and Write-back
+## Getting Started
 
-After the therapy session, the app records what happened using structured resources such as `Procedure`, `Observation`, `QuestionnaireResponse`, and encounter-linked updates. This creates continuity in the record and supports future longitudinal interpretation. [web:1][web:4][cite:16]
+### Prerequisites
 
-## Data Flow
+- A development or sandbox FHIR server. [web:95][web:101]
+- Sample or synthetic FHIR data for patient, monitoring, and care plan resources. [web:83]
+- A local frontend development environment.
+- Optional mock integrations for remote monitoring data if live device feeds are not available.
+
+### Suggested setup
+
+1. Clone this repository.
+2. Configure the FHIR server base URL in your environment settings.
+3. Load or connect sample FHIR resources.
+4. Start the local development environment.
+5. Validate the read and write workflow against the target FHIR server. [web:36][web:43]
+
+For a challenge build, keep the first implementation focused on four screens: patient selection, readiness dashboard, session planning, and post-session documentation. A simple working workflow is likely to be stronger than a broad but shallow prototype. [web:40][web:46]
+
+## Roadmap
+
+- Build patient lookup and readiness dashboard.
+- Add structured session planning and decision capture.
+- Implement post-session write-back to the FHIR server.
+- Add recent trend views and broader baseline context.
+- Extend toward multi-device and multi-pathway neurorehabilitation support. [cite:18][cite:23][cite:24]
+
+## Docs
+
+- [Architecture](docs/architecture.md)
+- [FHIR Resources](docs/fhir-resources.md)
+- [Workflow](docs/workflow.md)
+
+## Repository Structure
 
 ```text
-Remote Monitoring Source / Rehab Device
-                |
-                v
-       FHIR-normalized Device Data
-                |
-                v
-            FHIR Server
-                |
-     ---------------------------
-     |            |            |
-     v            v            v
-  Patient      Conditions    Care Plans
-  Context      + History     + Requests
-     \            |            /
-      \           |           /
-       \          |          /
-        v         v         v
-      Verada Neurorehab Readiness
-                |
-                v
-      Session Decision + Outcome
-                |
-                v
-            FHIR Write-back
+.
+├── README.md
+├── docs/
+│   ├── architecture.md
+│   ├── fhir-resources.md
+│   └── workflow.md
+├── src/
+├── public/
+├── examples/
+└── .env.example
 ```
-
-## Application Boundaries
-
-The first version should not attempt to implement a full clinical intelligence engine or a full EPR replacement. Its purpose is to show that physiological context, rehabilitation planning, and structured documentation can be connected in a focused FHIR workflow. [web:36][cite:18]
-
-In a later version, this same architecture could support richer baseline and longitudinal models, multi-device integration, and more sophisticated therapy personalization. [cite:17][cite:18]
-
-## Suggested Frontend Modules
-
-- Patient search and selection.
-- Daily readiness dashboard.
-- Session planning and decision capture.
-- Post-session documentation.
-- Minimal audit or activity history view.
-
-These modules are enough to support a coherent challenge-ready implementation while leaving space for later growth. [web:40][web:46]
 
 ## Notes
 
-This repository represents a challenge-focused implementation and is intentionally scoped for clarity, speed, and demonstrable interoperability. It can later evolve into a broader Verada workflow layer for remote neurorehabilitation and longitudinal rehabilitation intelligence. [cite:18][cite:20]
+This repository is intentionally scoped as a focused FHIR app for neurorehabilitation readiness and session documentation. It is designed to demonstrate a real clinical workflow clearly, while still leaving room for future expansion into deeper longitudinal intelligence and production-grade interoperability. [cite:18][cite:20]
