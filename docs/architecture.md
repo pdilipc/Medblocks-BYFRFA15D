@@ -60,11 +60,11 @@ Remote Monitoring Source / Rehab Device
 
 ## Application Boundaries
 
-The first version should not attempt to implement a full clinical intelligence engine or a full EPR replacement. Its purpose is to show that physiological context, rehabilitation planning, and structured documentation can be connected in a focused FHIR workflow. [web:36][cite:18]
+The first version is purely an attempt to implement a full clinical intelligence engine or a full EPR replacement. Its purpose is to show that physiological context, rehabilitation planning, and structured documentation can be connected in a focused FHIR workflow.
 
-In a later version, this same architecture could support richer baseline and longitudinal models, multi-device integration, and more sophisticated therapy personalization. [cite:17][cite:18]
+In a later version, this same architecture could support richer baseline and longitudinal models, multi-device integration, and more sophisticated therapy personalization. 
 
-## Suggested Frontend Modules
+## Current Frontend Modules
 
 - Patient search and selection.
 - Daily readiness dashboard.
@@ -72,4 +72,4 @@ In a later version, this same architecture could support richer baseline and lon
 - Post-session documentation.
 - Minimal audit or activity history view.
 
-These modules are enough to support a coherent challenge-ready implementation while leaving space for later growth. [web:40][web:46]
+These modules are enough to start with, but can later expand depending on our business needs.
