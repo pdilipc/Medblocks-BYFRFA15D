@@ -1,6 +1,5 @@
 # Medblocks - Build Your First Real FHIR App in 15 Days - Submission
 
-# Medblocks - Build Your First Real FHIR App in 15 Days - Submission
 
 # Verada Neurorehab Readiness
 
