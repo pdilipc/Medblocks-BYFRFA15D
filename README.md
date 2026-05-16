@@ -228,18 +228,19 @@ This repository exists to demonstrate how FHIR can support a clinically meaningf
 
 ```text
 .
+.
 ├── README.md
 ├── docs/
 │   ├── architecture.md
 │   ├── workflow.md
 │   ├── fhir-resources.md
 │   └── synthetic-data.md
+├── data/
+│   └── synthetic/
+│       └── holistic_stroke_neurorehabilitation_and_neurotech_ecosystem.json
 ├── src/
 ├── public/
 ├── examples/
-│   └── sample-fhir-data/
-├── templates/
-│   └── stroke_neurorehab.json
 ├── .env.example
 ├── package.json
 └── LICENSE
