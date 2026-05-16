@@ -14,18 +14,17 @@ The primary use case is a home-based or hybrid neurorehabilitation pathway in wh
 
 ## Synthetic Data Strategy
 
-To support rapid development and realistic testing, this project uses a custom **Synthea Generic Module Framework (GMF)** approach to generate neurorehabilitation-oriented synthetic FHIR datasets. The synthetic cohort is designed to model stroke rehabilitation pathways, longitudinal monitoring patterns, and therapy-routing logic relevant to readiness assessment, session planning, and outcome documentation. Therefore, this custom Synthea GMF-based synthetic data module simulates a longitudinal stroke neurorehabilitation pathway and is intended to generate clinically plausible FHIR data for development and demonstration, but it is not a validated clinical model and should not be interpreted as a production-grade representation of real patient trajectories.
+To support rapid development and realistic testing, this project uses a custom Synthea Generic Module Framework (GMF) approach to generate neurorehabilitation-oriented synthetic FHIR datasets. The synthetic cohort is designed to model stroke rehabilitation pathways, longitudinal monitoring patterns, and therapy-routing logic relevant to readiness assessment, session planning, and outcome documentation.
 
-The Dozee, recoveriX, and SynPhNe-inspired pathways are used as workflow analogues to structure the synthetic cohort around monitoring, therapy routing, and outcome tracking. These pathways help support a realistic demo of readiness assessment and rehabilitation planning, but they remain synthetic and configurable rather than clinically authoritative.
+This custom Synthea GMF-based synthetic data module simulates a longitudinal stroke neurorehabilitation pathway. It is intended to generate clinically plausible FHIR data for development and demonstration, but it is not a validated clinical model and should not be interpreted as a production-grade representation of real patient trajectories.
 
 The synthetic dataset is intended to simulate a multimodal neurorehabilitation pathway inspired by three types of inputs:
 
-1. **Dozee-style remote physiological monitoring** for sleep, respiration, resting heart rate, and overnight readiness context.
-2. **recoveriX-style BCI-FES rehabilitation workflows** for patients with more severe upper-limb motor deficits.
-3. **SynPhNe-style EEG/EMG neurorehabilitation workflows** for patients with retained but impaired motor function.
+- Dozee-style remote physiological monitoring for sleep, respiration, resting heart rate, and overnight readiness context.
+- recoveriX-style BCI-FES rehabilitation workflows for patients with more severe upper-limb motor deficits.
+- SynPhNe-style EEG/EMG neurorehabilitation workflows for patients with retained but impaired motor function.
 
-This synthetic data strategy helps the app demonstrate a realistic specialty-care workflow while avoiding privacy constraints and allowing controlled testing of longitudinal rehabilitation scenarios.
-
+The Dozee, recoveriX, and SynPhNe-inspired pathways are used as workflow analogues to structure the synthetic cohort around monitoring, therapy routing, and outcome tracking. This synthetic data strategy helps the app demonstrate a realistic specialty-care workflow while avoiding privacy constraints and allowing controlled testing of longitudinal rehabilitation scenarios.
 
 ## Features
 
