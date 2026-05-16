@@ -1,0 +1,259 @@
+{
+  "name": "Holistic Stroke Neurorehabilitation and Neurotech Ecosystem",
+  "remarks": [
+    "A comprehensive longitudinal module tracking a patient from acute stroke onset,",
+    "emergency interventions, post-acute Dozee telemetry tracking, clinical inclusion triage,",
+    "and specialized device allocation (recoveriX vs SynPhne) leading to a unified outcome framework."
+  ],
+  "states": {
+    "Initial": {
+      "type": "Initial",
+      "direct_transition": "Acute_Stroke_Onset"
+    },
+    "Acute_Stroke_Onset": {
+      "type": "ConditionOnset",
+      "target_encounter": "Emergency_Encounter",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": "42343007",
+          "display": "Ischemic stroke"
+        }
+      ],
+      "direct_transition": "Emergency_Encounter"
+    },
+    "Emergency_Encounter": {
+      "type": "Encounter",
+      "encounter_class": "emergency",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": "4525004",
+          "display": "Emergency department patient care"
+        }
+      ],
+      "direct_transition": "Acute_Thrombolytic_Intervention"
+    },
+    "Acute_Thrombolytic_Intervention": {
+      "type": "Procedure",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": "230958000",
+          "display": "Thrombolytic therapy"
+        }
+      ],
+      "direct_transition": "End_Emergency_Encounter"
+    },
+    "End_Emergency_Encounter": {
+      "type": "EncounterEnd",
+      "direct_transition": "Inpatient_Rehab_Admission"
+    },
+    "Inpatient_Rehab_Admission": {
+      "type": "Encounter",
+      "encounter_class": "inpatient",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": "305368008",
+          "display": "Inpatient rehabilitation"
+        }
+      ],
+      "direct_transition": "Dozee_RPM_Setup"
+    },
+    "Dozee_RPM_Setup": {
+      "type": "Device",
+      "action": "attach",
+      "code": {
+        "system": "SNOMED-CT",
+        "code": "469007003",
+        "display": "Ballistocardiography patient monitoring system"
+      },
+      "remarks": [
+        "Dozee contactless sensor mat deployed beneath the patient's mattress upon rehab entry."
+      ],
+      "direct_transition": "Dozee_Telemetry_HeartRate"
+    },
+    "Dozee_Telemetry_HeartRate": {
+      "type": "Observation",
+      "category": "vital-signs",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "8867-4",
+          "display": "Heart rate"
+        }
+      ],
+      "exact": {
+        "quantity": {
+          "value": 76,
+          "unit": "bpm"
+        }
+      },
+      "direct_transition": "Dozee_Telemetry_Sleep_Efficiency"
+    },
+    "Dozee_Telemetry_Sleep_Efficiency": {
+      "type": "Observation",
+      "category": "vital-signs",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "93832-3",
+          "display": "Sleep efficiency"
+        }
+      ],
+      "exact": {
+        "quantity": {
+          "value": 81,
+          "unit": "%"
+        }
+      },
+      "remarks": [
+        "Monitors structural rest cycles essential for neuroplastic pathway restoration."
+      ],
+      "direct_transition": "Baseline_Inclusion_Assessment"
+    },
+    "Baseline_Inclusion_Assessment": {
+      "type": "Observation",
+      "category": "clinical-test",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "97711-6",
+          "display": "Fugl-Meyer Assessment Upper Extremity Total"
+        }
+      ],
+      "remarks": [
+        "Triage point evaluating paretic limb to determine retained motor activation capabilities."
+      ],
+      "distributed_transition": [
+        {
+          "distribution": 0.45,
+          "transition": "Route_To_RecoveriX_Track",
+          "remarks": "Severe impairment/Trace activation. Patient requires involuntary closed-loop FES priming."
+        },
+        {
+          "distribution": 0.55,
+          "transition": "Route_To_SynPhne_Track",
+          "remarks": "Minimal retained voluntary capability. Patient qualifies for active task-oriented feedback."
+        }
+      ]
+    },
+    "Route_To_RecoveriX_Track": {
+      "type": "Procedure",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": "225285002",
+          "display": "Brain-computer interface therapy"
+        }
+      ],
+      "remarks": [
+        "Patient completes a multi-session recoveriX block combining motor imagery with FES muscle tracking."
+      ],
+      "direct_transition": "Recoverix_Classification_Metric"
+    },
+    "Recoverix_Classification_Metric": {
+      "type": "Observation",
+      "category": "exam",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "95728-2",
+          "display": "Motor imagery classification accuracy"
+        }
+      ],
+      "exact": {
+        "quantity": {
+          "value": 87,
+          "unit": "%"
+        }
+      },
+      "remarks": [
+        "High BCI classification accuracy confirms active feedforward engagement of the motor cortex."
+      ],
+      "direct_transition": "Therapy_Timeline_Delay"
+    },
+    "Route_To_SynPhne_Track": {
+      "type": "Procedure",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": "225285002",
+          "display": "Physical therapy neurorehabilitation"
+        }
+      ],
+      "remarks": [
+        "Patient engages in active SynPhne task training utilizing dual EEG/EMG feedback arrays."
+      ],
+      "direct_transition": "SynPhne_Coordination_Metric"
+    },
+    "SynPhne_Coordination_Metric": {
+      "type": "Observation",
+      "category": "survey",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "95729-0",
+          "display": "Action Research Arm Test (ARAT) Total Score"
+        }
+      ],
+      "exact": {
+        "quantity": {
+          "value": 34,
+          "unit": "score"
+        }
+      },
+      "remarks": [
+        "Evaluates fine motor coordination and the inhibition of maladaptive compensation movements."
+      ],
+      "direct_transition": "Therapy_Timeline_Delay"
+    },
+    "Therapy_Timeline_Delay": {
+      "type": "Delay",
+      "range": {
+        "low": 4,
+        "high": 6,
+        "unit": "weeks"
+      },
+      "remarks": [
+        "Represents the longitudinal duration of physical rehabilitation before discharge testing."
+      ],
+      "direct_transition": "Unified_Neuroplastic_Outcome"
+    },
+    "Unified_Neuroplastic_Outcome": {
+      "type": "Observation",
+      "category": "clinical-test",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "97711-6",
+          "display": "Fugl-Meyer Assessment Upper Extremity Total"
+        }
+      ],
+      "exact": {
+        "quantity": {
+          "value": 51,
+          "unit": "score"
+        }
+      },
+      "remarks": [
+        "The convergent outcome score tracking total motor gains across both therapeutic options."
+      ],
+      "direct_transition": "Discharge_Inpatient_Rehab"
+    },
+    "Discharge_Inpatient_Rehab": {
+      "type": "EncounterEnd",
+      "direct_transition": "Resolve_Stroke_Condition"
+    },
+    "Resolve_Stroke_Condition": {
+      "type": "ConditionEnd",
+      "referenced_by_attribute": "Acute_Stroke_Onset",
+      "direct_transition": "Terminal"
+    },
+    "Terminal": {
+      "type": "Terminal"
+    }
+  },
+  "gmf_version": 2
+}
