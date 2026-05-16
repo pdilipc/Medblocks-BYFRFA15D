@@ -1,0 +1,1 @@
+This synthetic module is designed to generate a coherent neurorehabilitation story rather than a statistically validated population model. The exact values, branching rules, and outcome scores are illustrative defaults that may be replaced with distributions, randomized variation, or expert-calibrated rules in future iterations.
