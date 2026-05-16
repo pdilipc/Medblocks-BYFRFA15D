@@ -1,6 +1,6 @@
 # Medblocks - Build Your First Real FHIR App in 15 Days - Submission
 
-# "Verada Neurorehab Readiness" Application
+# 'Verada Neurorehab Readiness' - Clinician Facing Application
 
 Verada Neurorehab Readiness is a FHIR-based application for remote neurorehabilitation workflows. It combines home physiological monitoring, rehabilitation planning, synthetic neurorehabilitation datasets, and structured clinical documentation to help clinicians assess daily readiness for therapy, personalize sessions, and write outcomes back into the patient record.
 
@@ -14,7 +14,9 @@ The primary use case is a home-based or hybrid neurorehabilitation pathway in wh
 
 ## Synthetic Data Strategy
 
-To support rapid development and realistic testing, this project uses a custom **Synthea Generic Module Framework (GMF)** approach to generate neurorehabilitation-oriented synthetic FHIR datasets. The synthetic cohort is designed to model stroke rehabilitation pathways, longitudinal monitoring patterns, and therapy-routing logic relevant to readiness assessment, session planning, and outcome documentation.
+To support rapid development and realistic testing, this project uses a custom **Synthea Generic Module Framework (GMF)** approach to generate neurorehabilitation-oriented synthetic FHIR datasets. The synthetic cohort is designed to model stroke rehabilitation pathways, longitudinal monitoring patterns, and therapy-routing logic relevant to readiness assessment, session planning, and outcome documentation. Therefore, this custom Synthea GMF-based synthetic data module simulates a longitudinal stroke neurorehabilitation pathway and is intended to generate clinically plausible FHIR data for development and demonstration, but it is not a validated clinical model and should not be interpreted as a production-grade representation of real patient trajectories.
+
+The Dozee, recoveriX, and SynPhNe-inspired pathways are used as workflow analogues to structure the synthetic cohort around monitoring, therapy routing, and outcome tracking. These pathways help support a realistic demo of readiness assessment and rehabilitation planning, but they remain synthetic and configurable rather than clinically authoritative.
 
 The synthetic dataset is intended to simulate a multimodal neurorehabilitation pathway inspired by three types of inputs:
 
@@ -23,6 +25,7 @@ The synthetic dataset is intended to simulate a multimodal neurorehabilitation p
 3. **SynPhNe-style EEG/EMG neurorehabilitation workflows** for patients with retained but impaired motor function.
 
 This synthetic data strategy helps the app demonstrate a realistic specialty-care workflow while avoiding privacy constraints and allowing controlled testing of longitudinal rehabilitation scenarios.
+
 
 ## Features
 
@@ -242,6 +245,7 @@ This repository exists to demonstrate how FHIR can support a clinically meaningf
 ├── package.json
 └── LICENSE
 ```
+
 
 ## Notes
 
