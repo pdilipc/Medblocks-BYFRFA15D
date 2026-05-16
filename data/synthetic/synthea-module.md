@@ -1,6 +1,6 @@
 # Stroke Neurorehabilitation & Neurotech Ecosystem Module
 
-This directory contains the custom Synthea™ Generic Module Framework (GMF) configuration file (`stroke_neurotech.json`) designed to simulate a holistic, longitudinal patient journey for ischemic stroke survivors. 
+This directory contains the custom Synthea™ Generic Module Framework (GMF) configuration file (`holistic_stroke_neurorehabilitation_and_neurotech_ecosystem.json`) designed to simulate a holistic, longitudinal patient journey for ischemic stroke survivors. 
 
 Unlike standard acute-care modules, this file models post-acute workflows, continuous remote patient monitoring (RPM), clinical triage decision logic, and advanced neurotechnology interventions (**Dozee**, **recoveriX**, and **SynPhne**) leading to a unified neuroplastic outcome endpoint.
 
@@ -95,9 +95,9 @@ To ensure your downstream data analytics models or FHIR registries can easily ev
 
 ## 🚀 How to Generate This Dataset Locally
 
-1. Place the `stroke_neurotech.json` module file into your local Synthea codebase directory:
+1. Place the `holistic_stroke_neurorehabilitation_and_neurotech_ecosystem.json` module file into your local Synthea codebase directory:
    ```bash
-   cp stroke_neurotech.json ./src/main/resources/modules/
+   cp holistic_stroke_neurorehabilitation_and_neurotech_ecosystem.json ./src/main/resources/modules/
    ```
 2. Build and compile the local test suite using Gradle:
    ```bash
@@ -105,7 +105,7 @@ To ensure your downstream data analytics models or FHIR registries can easily ev
    ```
 3. Generate a population cohort of 1,000 synthetic patient records containing this integrated technology footprint:
    ```bash
-   ./run_synthea -p 1000 -m "stroke_neurotech"
+   ./run_synthea -p 1000 -m "holistic_stroke_neurorehabilitation_and_neurotech_ecosystem"
    ```
 4. Find your generated FHIR bundles output cleanly as JSON files inside:
    ```text
