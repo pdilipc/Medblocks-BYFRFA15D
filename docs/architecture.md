@@ -6,6 +6,8 @@ Verada Neurorehab Readiness is designed as a lightweight workflow application la
 
 The architecture is intentionally compact for rapid implementation. It prioritizes clear interoperability and a working end-to-end clinical use case over heavy infrastructure or advanced analytics in the first version.
 
+The synthetic data generation layer is a dedicated component of the architecture, separate from the application’s clinician-facing workflow. Its role is to provide structured and plausible FHIR resources that exercise the readiness, routing, documentation, and write-back logic of the application.
+
 ## Design Goals
 
 - Keep the workflow clinically meaningful and easy to demonstrate.
