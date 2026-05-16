@@ -14,6 +14,7 @@ The synthetic data generation layer is a dedicated component of the architecture
 - Read real FHIR resources from a server and write structured outputs back.
 - Support home or hybrid neurorehabilitation pathways using physiological observations as pre-session context.
 - Use synthetic neurorehabilitation cohorts to simulate realistic specialty workflows without privacy constraints.
+- Keep the synthetic layer clearly separated from clinician workflow logic.
 - Remain extensible for broader Verada orchestration and intelligence layers in future versions.
 
 ## High-Level Components
@@ -70,6 +71,8 @@ Custom Synthea Neurorehab Module
 ## Application Boundaries
 
 The first version should not attempt to implement a full clinical intelligence engine or a full EPR replacement. Its purpose is to show that physiological context, rehabilitation planning, synthetic specialty data, and structured documentation can be connected in a focused FHIR workflow.
+
+The synthetic module should not be interpreted as a validated decision-support engine or a substitute for clinical judgement. It is a development and demonstration tool that helps exercise the workflow and make the app concrete.
 
 In a later version, this same architecture could support richer baseline and longitudinal models, multi-device integration, and more sophisticated therapy personalization.
 
