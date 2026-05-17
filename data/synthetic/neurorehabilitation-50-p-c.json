@@ -1,0 +1,318 @@
+{
+  "name": "Neurorehabilitation Debug With Statistical Distributions",
+  "remarks": [
+    "Refactored to flat root-level units to clear Synthea State Observation schema validation constraints."
+  ],
+  "gmf_version": 2,
+  "states": {
+    "Initial": {
+      "type": "Initial",
+      "conditional_transition": [
+        {
+          "condition": {
+            "condition_type": "PriorState",
+            "has": "Stroke_Onset"
+          },
+          "transition": "Terminal"
+        },
+        {
+          "condition": {
+            "condition_type": "And",
+            "conditions": [
+              {
+                "condition_type": "Age",
+                "operator": "<",
+                "quantity": 35,
+                "unit": "years"
+              },
+              {
+                "condition_type": "True",
+                "probability": 0.0005
+              }
+            ]
+          },
+          "transition": "Stroke_Onset"
+        },
+        {
+          "condition": {
+            "condition_type": "And",
+            "conditions": [
+              {
+                "condition_type": "Age",
+                "operator": ">=",
+                "quantity": 35,
+                "unit": "years"
+              },
+              {
+                "condition_type": "Age",
+                "operator": "<",
+                "quantity": 55,
+                "unit": "years"
+              },
+              {
+                "condition_type": "True",
+                "probability": 0.005
+              }
+            ]
+          },
+          "transition": "Stroke_Onset"
+        },
+        {
+          "condition": {
+            "condition_type": "And",
+            "conditions": [
+              {
+                "condition_type": "Age",
+                "operator": ">=",
+                "quantity": 55,
+                "unit": "years"
+              },
+              {
+                "condition_type": "True",
+                "probability": 0.08
+              }
+            ]
+          },
+          "transition": "Stroke_Onset"
+        },
+        {
+          "condition": {
+            "condition_type": "Age",
+            "operator": ">=",
+            "quantity": 140,
+            "unit": "years"
+          },
+          "transition": "Terminal"
+        }
+      ]
+    },
+    "Stroke_Onset": {
+      "type": "ConditionOnset",
+      "target_encounter": "Emergency_Encounter",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": "42343007",
+          "display": "Ischemic stroke"
+        }
+      ],
+      "direct_transition": "Emergency_Encounter"
+    },
+    "Emergency_Encounter": {
+      "type": "Encounter",
+      "encounter_class": "emergency",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": "4525004",
+          "display": "Emergency department patient care"
+        }
+      ],
+      "direct_transition": "Thrombolysis"
+    },
+    "Thrombolysis": {
+      "type": "Procedure",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": "230958000",
+          "display": "Thrombolytic therapy"
+        }
+      ],
+      "direct_transition": "End_Emergency"
+    },
+    "End_Emergency": {
+      "type": "EncounterEnd",
+      "direct_transition": "Rehab_Admission"
+    },
+    "Rehab_Admission": {
+      "type": "Encounter",
+      "encounter_class": "inpatient",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": "305368008",
+          "display": "Inpatient rehabilitation"
+        }
+      ],
+      "direct_transition": "Attach_Device"
+    },
+    "Attach_Device": {
+      "type": "Device",
+      "action": "attach",
+      "code": {
+        "system": "SNOMED-CT",
+        "code": "469007003",
+        "display": "Ballistocardiography patient monitoring system"
+      },
+      "direct_transition": "Dozee_Telemetry_HeartRate"
+    },
+    "Dozee_Telemetry_HeartRate": {
+      "type": "Observation",
+      "category": "vital-signs",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "8867-4",
+          "display": "Heart rate"
+        }
+      ],
+      "unit": "bpm",
+      "range": {
+        "low": 60.0,
+        "high": 100.0
+      },
+      "direct_transition": "Dozee_Telemetry_Sleep_Efficiency"
+    },
+    "Dozee_Telemetry_Sleep_Efficiency": {
+      "type": "Observation",
+      "category": "vital-signs",
+      "codes": [
+        {
+          "system": "LOINC",
+          "code": "93832-3",
+          "display": "Sleep efficiency"
+        }
+      ],
+      "unit": "%",
+      "range": {
+        "low": 65.0,
+        "high": 85.0
+      },
+      "direct_transition": "Triage_Cohort_Split"
+    },
+    "Triage_Cohort_Split": {
+      "type": "Simple",
+      "distributed_transition": [
+        {
+          "distribution": 0.45,
+          "transition": "Route_To_RecoveriX_Track"
+        },
+        {
+          "distribution": 0.55,
+          "transition": "Route_To_SynPhne_Track"
+        }
+      ]
+    },
+    "Route_To_RecoveriX_Track": {
+      "type": "Procedure",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": "225285002",
+          "display": "Brain-computer interface therapy"
+        }
+      ],
+      "direct_transition": "Record_RecoveriX_Baseline_FMA"
+    },
+    "Record_RecoveriX_Baseline_FMA": {
+      "type": "Observation",
+      "category": "exam",
+      "codes": [
+        {
+          "system": "http://loinc.org",
+          "code": "97711-6",
+          "display": "Fugl-Meyer Assessment Upper Extremity Total"
+        }
+      ],
+      "unit": "score",
+      "range": {
+        "low": 10.0,
+        "high": 25.0
+      },
+      "direct_transition": "RecoveriX_Delay"
+    },
+    "RecoveriX_Delay": {
+      "type": "Delay",
+      "range": {
+        "low": 4,
+        "high": 6,
+        "unit": "weeks"
+      },
+      "direct_transition": "Record_RecoveriX_Outcome_FMA"
+    },
+    "Record_RecoveriX_Outcome_FMA": {
+      "type": "Observation",
+      "category": "exam",
+      "codes": [
+        {
+          "system": "http://loinc.org",
+          "code": "97711-6",
+          "display": "Fugl-Meyer Assessment Upper Extremity Total"
+        }
+      ],
+      "unit": "score",
+      "range": {
+        "low": 26.0,
+        "high": 38.0
+      },
+      "direct_transition": "Discharge_Rehab"
+    },
+    "Route_To_SynPhne_Track": {
+      "type": "Procedure",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": "225285002",
+          "display": "Physical therapy neurorehabilitation"
+        }
+      ],
+      "direct_transition": "Record_SynPhne_Baseline_FMA"
+    },
+    "Record_SynPhne_Baseline_FMA": {
+      "type": "Observation",
+      "category": "exam",
+      "codes": [
+        {
+          "system": "http://loinc.org",
+          "code": "97711-6",
+          "display": "Fugl-Meyer Assessment Upper Extremity Total"
+        }
+      ],
+      "unit": "score",
+      "range": {
+        "low": 26.0,
+        "high": 45.0
+      },
+      "direct_transition": "SynPhne_Delay"
+    },
+    "SynPhne_Delay": {
+      "type": "Delay",
+      "range": {
+        "low": 4,
+        "high": 6,
+        "unit": "weeks"
+      },
+      "direct_transition": "Record_SynPhne_Outcome_FMA"
+    },
+    "Record_SynPhne_Outcome_FMA": {
+      "type": "Observation",
+      "category": "exam",
+      "codes": [
+        {
+          "system": "http://loinc.org",
+          "code": "97711-6",
+          "display": "Fugl-Meyer Assessment Upper Extremity Total"
+        }
+      ],
+      "unit": "score",
+      "range": {
+        "low": 40.0,
+        "high": 58.0
+      },
+      "direct_transition": "Discharge_Rehab"
+    },
+    "Discharge_Rehab": {
+      "type": "EncounterEnd",
+      "direct_transition": "Resolve_Stroke"
+    },
+    "Resolve_Stroke": {
+      "type": "ConditionEnd",
+      "condition_onset": "Stroke_Onset",
+      "direct_transition": "Terminal"
+    },
+    "Terminal": {
+      "type": "Terminal"
+    }
+  }
+}

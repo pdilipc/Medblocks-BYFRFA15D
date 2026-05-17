@@ -1,0 +1,19 @@
+{
+  "runID": "616f70cc-e7d5-4279-89e5-3a3c214b3c6a",
+  "seed": 1779023429931,
+  "clinicianSeed": 1779023429931,
+  "referenceTime": "20260517",
+  "endTime": "20260517",
+  "version": "c48eac7\n",
+  "patientCount": 50,
+  "providerCount": 1327,
+  "payerCount": 9,
+  "javaVersion": "23.0.2",
+  "generate.thread_pool_size": -1,
+  "generatorThreads": 4,
+  "runStartTime": "2026-05-17T13:10:29Z",
+  "runTimeInSeconds": 20,
+  "exporter.years_of_history": "10",
+  "state": "Massachusetts",
+  "modules": "neurorehabilitation-50-p-c"
+}
