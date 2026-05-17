@@ -1,1 +1,1 @@
-## Place holder file - Proceed to 'synthetic' fFolder
+## Place holder file - Proceed to 'synthetic' folder
