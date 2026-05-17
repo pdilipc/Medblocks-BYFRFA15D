@@ -2,191 +2,287 @@
 
 ## Purpose
 
-This Technical Requirements Document translates the product intent for Verada Neurorehab Readiness into concrete implementation choices so that engineering work remains coherent across the repository. The vibecoding guidance explicitly recommends a TRD to lock in framework, backend, database, APIs, environment variables, and constraints before code generation begins. [file:38]
+This Technical Requirements Document translates the product requirements for Verada Neurorehab Readiness into concrete implementation choices. The product vision remains neurorehabilitation readiness on top of FHIR, but delivery begins with a foundational patient management and patient details layer that supports future readiness-specific workflows.
 
-The repo materials define the application as a lightweight clinician-facing workflow layered on top of a FHIR server, with a synthetic data generation layer kept separate from the main application workflow. The technical stack below is therefore optimized for rapid implementation, clean interoperability, and a credible challenge-ready demo rather than a production-scale clinical platform. [file:43][file:39]
+The goal of this document is to lock in the technical stack, architecture, routing, FHIR integration patterns, proxy behavior, validation rules, and module boundaries so implementation remains coherent across the repository.
 
 ## System scope
 
-The system must support four core functions in the first version: patient selection, daily readiness review, session planning, and post-session documentation. It must read relevant FHIR resources from a target server and write structured documentation back after the clinician completes the session workflow. [file:39][file:40][file:42]
+The system is a clinician-facing FHIR application with staged delivery.
 
-The technical design must also support synthetic cohort generation using a custom Synthea GMF module. That synthetic data layer is a testing and demonstration dependency, not the application runtime itself, and should remain operationally separated from clinician-facing UI logic. [file:43][file:41][file:45]
+### Epic 1: Patient Management and Patient Details Foundation
+
+Epic 1 is the minimum implementation scope and includes:
+
+- Listing all patients from the FHIR server
+- Searching patients by name
+- Creating new patients
+- Editing existing patients
+- Viewing a patient details page
+- Displaying demographics
+- Displaying longitudinal vital signs
+- Displaying conditions
+- Displaying medications
+- Routing all browser FHIR calls through a backend proxy
+
+### Epic 2: Neurorehabilitation Readiness Review
+
+Epic 2 extends the patient details layer with neurorehabilitation-oriented readiness interpretation using longitudinal patient context, physiological observations, and rehabilitation-related context.
+
+### Epic 3: Session Planning, Documentation, and Structured Write-back
+
+Epic 3 adds session decisions, post-session documentation, and structured FHIR write-back using resources such as `Procedure`, `Observation`, and `QuestionnaireResponse`.
+
+## Architecture overview
+
+The application should follow a lightweight layered architecture:
+
+1. **Frontend application layer**  
+   Presents the clinician UI for patient management, patient review, and later readiness workflows.
+
+2. **Backend FHIR proxy layer**  
+   Receives browser requests, injects authorization headers, forwards requests to the FHIR server, and returns responses to the frontend.
+
+3. **FHIR server layer**  
+   Serves as the system of record for patient and clinical data.
+
+4. **Optional synthetic data generation layer**  
+   Supports development and demonstration datasets for later neurorehabilitation-oriented workflows, but is not required for Epic 1 runtime behavior.
 
 ## Recommended stack
 
 ### Frontend
 
-- Next.js 14 with TypeScript and App Router.
-- Tailwind CSS for fast UI implementation and consistent styling.
-- A component library such as shadcn/ui for cards, tables, dialogs, forms, and tabs.
-- React Query or TanStack Query for FHIR data fetching, cache management, and mutation handling.
-- Zod for runtime validation of form payloads and environment configuration.
-
-This frontend choice aligns with the need for a compact, implementation-friendly clinician workflow with four primary screens and room for future expansion. The vibecoding guidance specifically asks that the TRD decide the frontend stack upfront rather than leaving it to agent guesswork. [file:38][file:39][file:40]
+- Next.js 14 with TypeScript and App Router
+- Tailwind CSS
+- shadcn/ui or similar component library
+- TanStack Query for data fetching and caching
+- Zod for validation
+- Plotly, Recharts, or a similar charting library for time-series vitals
 
 ### Backend
 
-- Next.js server components plus route handlers for server-side FHIR proxying and write-back actions.
-- Lightweight service layer for FHIR resource retrieval, search composition, write-back mapping, and validation.
-- Optional background scripts for fixture loading, synthetic bundle ingestion, and demo environment seeding.
-
-This keeps the initial architecture compact, consistent with the repo’s emphasis on a focused workflow application rather than a heavily separated microservice architecture. The app is explicitly described as a lightweight layer on top of a FHIR server. [file:43][file:39]
+- Next.js route handlers or a lightweight Node server for proxy endpoints
+- Centralized FHIR client utilities
+- Server-side request forwarding with authorization header injection
 
 ### Database
 
-- No primary clinical database in v1 for the core patient record; the FHIR server remains the system of record.
-- Optional local application database using PostgreSQL for non-clinical app metadata only, such as clinician preferences, audit helper tables, cached demo mappings, or saved UI configuration.
-- Prisma may be used only if a local relational store becomes necessary for non-FHIR application state.
-
-This follows the repo’s architectural position that patient context, observations, conditions, care plans, and session outcomes are stored and served through the FHIR server. [file:43][file:39]
-
-### Authentication
-
-- Initial demo mode: simple protected local access without full enterprise auth, if the target environment is a sandbox or challenge deployment.
-- Preferred production-oriented path: SMART-on-FHIR compatible OAuth2/OIDC or a thin clinician auth layer integrated with the hosting environment.
-- Session management via secure HTTP-only cookies if custom auth is added.
-
-The current repo materials do not define a concrete auth mechanism, so the technical requirement is to avoid overengineering authentication in the first version while leaving a clean upgrade path to standards-based healthcare authentication. This is consistent with the repo’s challenge-focused scope and compact implementation philosophy. [file:38][file:39][file:43]
+- No primary application database is required for Epic 1 clinical data
+- The FHIR server remains the system of record
+- Optional local relational storage may be used later for non-clinical metadata only
 
 ### Hosting
 
-- Frontend and server routes: Vercel or a similar Node-compatible deployment platform for rapid iteration.
-- FHIR server: external sandbox or local development instance.
-- Synthetic generation environment: local Synthea runtime or containerized script execution environment.
-- Optional object storage for example bundles, seed files, and exported demo artifacts.
+- Frontend and backend proxy can be deployed together on Vercel or another Node-compatible platform
+- FHIR server is external or sandbox-hosted
+- Synthetic generation can run locally or in a separate tooling environment
 
-### Third-party systems and dependencies
+## Application routes
 
-- FHIR server endpoint as the primary interoperability dependency. [file:43][file:42]
-- Synthea with support for custom GMF modules for synthetic cohort generation. [file:39][file:45]
-- Optional charting library for lightweight trend displays if a recent-history panel is added. [file:43]
-- SNOMED-CT and LOINC coding support through resource content and terminology mapping already reflected in the synthetic module. [file:44][file:45]
+### Frontend routes
 
-## Application modules
+- `/` or `/patients`  
+  Patient list and patient management screen
 
-The frontend should be organized into a small number of workflow-aligned modules:
+- `/patient/[id]`  
+  Patient details page
 
-- `patient-search`: FHIR patient lookup and selection.
-- `readiness-dashboard`: recent observations, condition summary, care plan context, and service request context.
-- `session-planning`: proceed/modify/defer decision capture with rationale.
-- `documentation`: post-session recording using `Procedure`, `Observation`, and `QuestionnaireResponse` payloads.
-- `history-trends`: optional recent observation history or recent activity strip.
+- Optional later route: `/patient/[id]/readiness`  
+  Neurorehabilitation readiness workflow entry point
 
-These modules map directly to the suggested frontend modules in the architecture document and the minimum demo scope in the README and workflow docs. [file:43][file:39][file:40]
+### Backend proxy routes
 
-## FHIR integration requirements
+Suggested route structure:
 
-### Read operations
+- `/api/fhir/Patient`
+- `/api/fhir/Patient/[id]`
+- `/api/fhir/Observation`
+- `/api/fhir/Condition`
+- `/api/fhir/MedicationRequest`
 
-The application must support retrieval of:
+The backend proxy should accept query parameters from the frontend and forward them to the target FHIR server unchanged, except for required authorization and internal configuration handling.
 
-- `Patient` for demographic identity and selection context. [file:42]
-- `Encounter` for active or recent session context. [file:42]
-- `Condition`, `CarePlan`, and `ServiceRequest` for rehabilitation and baseline planning context. [file:42]
-- `Device` and `Observation` for recent physiological and therapy-related measurements. [file:42]
+## Frontend modules
 
-### Write operations
+### Epic 1 modules
 
-The application must support creation or update flows for:
+- `patient-list`
+- `patient-search`
+- `patient-form`
+- `patient-details-header`
+- `vitals-section`
+- `vitals-chart-view`
+- `vitals-table-view`
+- `conditions-table`
+- `medications-table`
+- `loading-state`
+- `error-state`
 
-- `Observation` for readiness-related capture and outcome logging. [file:42]
-- `QuestionnaireResponse` for structured readiness, tolerance, or clinician-entered rationale. [file:42]
-- `Procedure` for therapy delivered. [file:42]
-- `Communication` or selective `CarePlan` updates where follow-up or escalation needs to be represented. [file:42]
+### Epic 2 modules
 
-### FHIR handling approach
+- `readiness-summary`
+- `neurorehab-context-panel`
+- `readiness-review`
 
-- Use typed wrappers around FHIR JSON payloads.
-- Normalize search parameters in a single service layer.
-- Centralize terminology constants and resource construction helpers.
-- Validate outbound resources before submission.
-- Keep the resource footprint intentionally compact to avoid over-modeling the rehabilitation domain in v1. [file:42]
+### Epic 3 modules
 
-## Synthetic data requirements
+- `session-planning`
+- `post-session-documentation`
+- `writeback-confirmation`
 
-The current synthetic module includes example exact values such as heart rate 76 bpm, sleep efficiency 81%, imagery accuracy 87%, ARAT 34, and FMA-UE outcome 51. Those values are useful as illustrative defaults, but the attached synthetic data strategy explicitly says exact values may be replaced with distributions, randomized variation, or expert-calibrated rules in future iterations. [file:44][file:41][file:45]
+## Backend FHIR proxy requirements
 
-Accordingly, the technical requirement for the next iteration is that physiological and outcome-oriented synthetic data should not be treated as strictly deterministic. Instead, generation should support realistic variability using bounded probability distributions, clinically sensible ranges, cohort stratification, and optional longitudinal correlation across repeated observations. [file:41][file:44]
+The backend proxy is required for all frontend FHIR traffic.
 
-### Synthetic variability design
+### Responsibilities
 
-- Heart rate, sleep efficiency, respiration-related measures, fatigue indicators, and selected assessment scores should be generated around clinically plausible central tendencies rather than fixed constants. [file:39][file:41]
-- Use configurable distributions such as truncated normal, beta, log-normal, or mixture distributions depending on the variable type and boundedness. [file:41]
-- Respect hard physiological bounds and pathway-specific constraints so generated values remain believable.
-- Allow subgroup variation by severity, care pathway, device track, age band, or recovery phase.
-- Support longitudinal drift so repeated observations for the same synthetic patient show continuity rather than independent random jumps.
-- Preserve branch probabilities, such as the recoveriX versus SynPhNe routing split, while allowing those probabilities to become conditional on baseline severity or generated assessments over time. [file:44][file:45]
+- Receive browser requests for FHIR resources
+- Append the required `Authorization` header
+- Forward the request to the configured FHIR server
+- Return the raw or normalized FHIR response to the frontend
+- Centralize request error handling
+- Keep credentials and tokens out of browser code
 
-### Example implementation rule
+### Supported Epic 1 operations
 
-For example, overnight resting heart rate should not always equal 76 bpm for every synthetic patient. Instead, it should be sampled from a clinically plausible bounded distribution with patient-level baseline anchoring and day-level variation. Sleep efficiency should similarly vary within realistic limits rather than being fixed at 81 percent across the cohort. The same principle should apply to FMA-UE, ARAT, and imagery-accuracy observations, which should reflect scenario-specific distributions instead of single hard-coded outputs. [file:44][file:45][file:41]
+#### Patient
 
-### Separation of concerns
+- `GET /Patient`
+- `GET /Patient?name={partialName}`
+- `GET /Patient/[id]`
+- `POST /Patient`
+- `PUT /Patient/[id]`
 
-The synthetic generation runtime should remain separate from the clinician-facing application. Generated bundles should be exported, reviewed, and loaded into the FHIR server used by the app, rather than generated ad hoc inside the main UI runtime. This follows the architecture guidance that the synthetic data layer is a dedicated component distinct from the clinician workflow layer. [file:43][file:39]
+#### Observation
 
-## API and service design
+- `GET /Observation?subject=Patient/[id]&code=8867-4,8310-5,9279-1,59408-5,8302-2,29463-7,39156-5,55284-4`
 
-### Internal routes
+#### Condition
 
-Suggested internal route groups:
+- `GET /Condition?patient=[id]`
 
-- `/api/fhir/patients/search`
-- `/api/fhir/patient/[id]/context`
-- `/api/fhir/patient/[id]/observations`
-- `/api/fhir/patient/[id]/plan`
-- `/api/fhir/session/decision`
-- `/api/fhir/session/documentation`
-- `/api/synthetic/import` for local admin use only
+#### MedicationRequest
 
-These routes can proxy to the FHIR server, simplify client logic, and provide a place to enforce validation, mapping, logging, and eventual auth controls.
+- `GET /MedicationRequest?patient=[id]`
 
-### Validation
+## FHIR resource requirements
 
-- Zod schemas for request payloads and environment variables.
-- FHIR resource shape validation for outbound resource construction.
-- Guardrails for required identifiers, encounter references, coding systems, and unit consistency.
+### Patient resource mapping
 
-## Folder structure
+Patient create and update operations must follow FHIR R4 conventions:
 
-A recommended repository layout is:
+- `name[0].given` must be an array
+- `name[0].family` must be a string
+- `gender` must use a valid FHIR administrative gender value
+- `birthDate` must use `YYYY-MM-DD`
 
-```text
-src/
-  app/
-    patients/
-    dashboard/
-    planning/
-    documentation/
-    api/
-  components/
-    patient-search/
-    readiness/
-    planning/
-    documentation/
-    shared/
-  lib/
-    fhir/
-    validation/
-    terminology/
-    synthetic/
-  types/
-    fhir/
-    app/
-docs/
-  architecture.md
-  workflow.md
-  fhir-resources.md
-  synthetic-data.md
-  prd.md
-  trd.md
-data/
-  synthetic/
-public/
-examples/
-```
+### Observation handling
 
-This structure is compatible with the repository layout described in the README while adding clearer separation for UI modules, FHIR logic, validation, and synthetic utilities. [file:39]
+The application must support retrieval and display of the following vital sign observations:
+
+- Heart rate: `8867-4`
+- Temperature: `8310-5`
+- Respiratory rate: `9279-1`
+- Oxygen saturation: `59408-5`
+- Height: `8302-2`
+- Weight: `29463-7`
+- BMI: `39156-5`
+- Blood pressure panel: `55284-4`
+
+For blood pressure observations, the UI must extract:
+- Systolic blood pressure: `8480-6`
+- Diastolic blood pressure: `8462-4`
+
+These should be displayed as two lines on the same chart.
+
+### Condition handling
+
+Conditions should be fetched by patient reference and displayed with:
+- Condition name
+- Onset date
+
+### MedicationRequest handling
+
+Medication requests should be fetched by patient reference and displayed with:
+- Medication name
+- Status
+
+## Validation requirements
+
+### Patient form validation
+
+The patient form must validate:
+
+- Given name is required
+- Family name is required
+- Gender is required
+- Gender must be one of:
+  - `male`
+  - `female`
+  - `other`
+  - `unknown`
+- Date of birth is required
+- Date of birth cannot be in the future
+- Date of birth must be in valid `YYYY-MM-DD` format
+
+Validation should occur both:
+- in the browser before submission
+- in the server-side proxy or request-construction layer before forwarding to FHIR where appropriate
+
+## Vitals display requirements
+
+The patient details page must support two viewing modes for vital signs:
+
+### Chart view
+
+- Each vital sign should be shown as its own time-series line chart
+- Blood pressure should be shown as a single chart with systolic and diastolic as separate lines
+- Time should be on the x-axis
+- Measured value should be on the y-axis
+
+### Table view
+
+The table should display:
+- Observation date
+- Vital sign name
+- Value
+- Unit where available
+
+A user-facing toggle must switch between chart view and table view.
+
+## UI state requirements
+
+The frontend must clearly support:
+
+### Loading states
+- Patient list loading
+- Patient details loading
+- Vitals loading
+- Conditions loading
+- Medications loading
+- Form submission loading
+
+### Error states
+- Failed patient list fetch
+- Failed patient create
+- Failed patient update
+- Failed patient details fetch
+- Failed vitals fetch
+- Failed conditions fetch
+- Failed medications fetch
+
+### Success states
+- Patient created successfully
+- Patient updated successfully
+
+## Security and access considerations
+
+- Authorization credentials must never be exposed in browser code
+- All FHIR server access from the frontend must pass through the backend proxy
+- Secrets must be stored in environment variables
+- The proxy should support secure bearer-token forwarding or equivalent authorization handling
+- Logging should avoid exposing patient-sensitive data unnecessarily
 
 ## Environment variables
 
@@ -194,40 +290,74 @@ Suggested environment variables:
 
 - `FHIR_BASE_URL`
 - `FHIR_AUTH_TYPE`
+- `FHIR_ACCESS_TOKEN`
 - `FHIR_CLIENT_ID`
 - `FHIR_CLIENT_SECRET`
 - `FHIR_SCOPE`
 - `APP_BASE_URL`
 - `SESSION_SECRET`
 - `NODE_ENV`
-- `SYNTHETIC_IMPORT_ENABLED`
-- `SYNTHETIC_BUNDLE_PATH`
 - `NEXT_PUBLIC_APP_NAME`
 
-These align with the vibecoding requirement that a TRD should explicitly list environment variables and technical constraints rather than leaving them implicit. [file:38]
+## Suggested folder structure
 
-## Key libraries
+```text
+docs/
+  requirements/
+    prd.md
+    trd.md
+    app-flow.md
+    ui-ux-design-brief.md
+    backend-schema.md
+    implementation-plan.md
 
-- `next`
-- `react`
-- `typescript`
-- `tailwindcss`
-- `@tanstack/react-query`
-- `zod`
-- `fhir/r4` or equivalent FHIR typings/utilities
-- `date-fns`
-- `clsx`
-- optional `prisma` and `@prisma/client` if local metadata persistence is introduced
+src/
+  app/
+    patients/
+    patient/[id]/
+    api/fhir/
+  components/
+    patient-list/
+    patient-form/
+    patient-details/
+    vitals/
+    conditions/
+    medications/
+    shared/
+  lib/
+    fhir/
+    validation/
+    charts/
+    utils/
+  types/
+    fhir/
+    app/
+```
 
 ## Constraints
 
-- The first version must remain limited to a coherent four-screen workflow. [file:39][file:40]
-- The app should not attempt to replace the FHIR server or act as a full EPR. [file:43]
-- The clinical intelligence layer should remain lightweight in the first version. [file:39][file:43]
-- The synthetic module must be clearly positioned as a development and demonstration asset, not a clinical recommendation engine. [file:41][file:43]
-- Synthetic physiological and assessment values should move away from deterministic constants and toward realistic distributions and patient-level variation. [file:41][file:44][file:45]
-- The implementation should privilege interoperability, clarity, and demo reliability over broad feature scope. [file:43][file:39]
+- Epic 1 must remain the first delivery priority
+- The app should not try to become a full EPR in version one
+- Neurorehab readiness remains the product direction, but should not be forced into the first implementation at the expense of the foundation
+- The proxy layer is mandatory for secure FHIR access
+- The patient details page must be clinically readable and support longitudinal review
+- Synthetic neurorehabilitation datasets may be used later, but are not a blocker for Epic 1 implementation
 
 ## Done criteria
 
-The TRD is satisfied when the implementation team can build the app without making foundational stack decisions ad hoc. In particular, the frontend, backend pattern, FHIR integration approach, environment variables, module structure, and synthetic-data variability rules should all be explicit enough that an AI coding agent or developer can use this as the technical source of truth. [file:38][file:39][file:43]
+The TRD is satisfied when the implementation team can build Epic 1 without making foundational decisions ad hoc.
+
+At minimum, the following should be explicit and stable:
+
+- Frontend stack
+- Backend proxy approach
+- FHIR resource mapping
+- Patient CRUD behavior
+- Search behavior
+- Patient details routing
+- Vitals rendering approach
+- Validation rules
+- Environment variables
+- Folder structure
+
+The document should also leave a clear extension path into neurorehabilitation readiness and structured write-back without requiring a redesign of the Epic 1 foundation.
